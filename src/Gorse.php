@@ -1,5 +1,7 @@
 <?php
 
+use GuzzleHttp\Exception\GuzzleException;
+
 class User implements JsonSerializable
 {
     public string $userId;
@@ -12,15 +14,25 @@ class User implements JsonSerializable
             'Labels' => $this->labels,
         ];
     }
+
+    public static function fromJSON($json): User
+    {
+        $user = new User();
+        $user->userId = $json->UserId;
+        $user->labels = $json->Labels;
+        return $user;
+    }
 }
 
 class RowAffected
 {
     public int $rowAffected;
 
-    function __construct(int $rowAffected)
+    public static function fromJSON($json): RowAffected
     {
-        $this->rowAffected = $rowAffected;
+        $rowAffected = new RowAffected();
+        $rowAffected->rowAffected = $json->RowAffected;
+        return $rowAffected;
     }
 }
 
@@ -35,13 +47,41 @@ final class Gorse
         $this->apiKey = $apiKey;
     }
 
+    /**
+     * @throws GuzzleException
+     */
     function insertUser(User $user): RowAffected
     {
+        return $this->request('POST', '/api/user/', $user, RowAffected::class);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getUser(string $user_id): User
+    {
+        return $this->request('GET', '/api/user/' . $user_id, null, User::class);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function deleteUser(string $user_id): RowAffected
+    {
+        return $this->request('DELETE', '/api/user/' . $user_id, null, RowAffected::class);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function request(string $method, string $uri, $body, $return_type)
+    {
         $client = new GuzzleHttp\Client(['base_uri' => $this->endpoint]);
-        $response = $client->request('POST', '/api/user', [
-            GuzzleHttp\RequestOptions::JSON => $user,
-            GuzzleHttp\RequestOptions::HEADERS => ['X-API-Key' => $this->apiKey]
-        ]);
-        return new RowAffected(json_decode($response->getBody())->RowAffected);
+        $options = [GuzzleHttp\RequestOptions::HEADERS => ['X-API-Key' => $this->apiKey]];
+        if ($body != null) {
+            $options[GuzzleHttp\RequestOptions::JSON] = $body;
+        }
+        $response = $client->request($method, $uri, $options);
+        return $return_type::fromJSON(json_decode($response->getBody()));
     }
 }
