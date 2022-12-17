@@ -29,7 +29,7 @@ jobs:
           retry-all: true
       - uses: php-actions/composer@v6
         with:
-          command: sudo apt-get install -y php8-redis
+          php_extensions: redis
       - uses: php-actions/phpunit@v3
         with:
           configuration: test/phpunit.xml
