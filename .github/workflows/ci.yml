@@ -28,7 +28,7 @@ jobs:
           # Retry all errors, including 404. This option might trigger curl upgrade.
           retry-all: true
       - name: Install php-redis
-        run: sudo apt-get install -y redis-cli php-redis
+        run: sudo apt-get install -y php8.1-redis
       - uses: php-actions/composer@v6
       - uses: php-actions/phpunit@v3
         with:
