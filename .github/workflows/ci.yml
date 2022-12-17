@@ -27,9 +27,9 @@ jobs:
           retry-delay: 5s
           # Retry all errors, including 404. This option might trigger curl upgrade.
           retry-all: true
-      - name: Install php-redis
-        run: sudo apt-get install -y php8.1-redis
       - uses: php-actions/composer@v6
+        with:
+          command: sudo apt-get install -y php8-redis
       - uses: php-actions/phpunit@v3
         with:
           configuration: test/phpunit.xml
