@@ -21,6 +21,10 @@ jobs:
         with:
           extensions: redis
           tools: composer, phpunit
+      - name: Install dependencies
+        run: composer install
+      - name: Set up autoloading
+        run: omposer dump-autoload
       - name: Check the deployed service health
         uses: jtalk/url-health-check-action@v2
         with:
@@ -32,7 +36,5 @@ jobs:
           retry-delay: 5s
           # Retry all errors, including 404. This option might trigger curl upgrade.
           retry-all: true
-      - name: Install dependencies
-        run: composer install
       - name: Run tests
         run: phpunit test
