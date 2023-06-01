@@ -18,7 +18,7 @@ services:
       MYSQL_PASSWORD: gorse_pass
 
   gorse:
-    image: zhenghaoz/gorse-in-one:nightly
+    image: zhenghaoz/gorse-in-one
     restart: unless-stopped
     ports:
       - 8086:8086
