@@ -14,6 +14,7 @@
         "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
+        "ext-redis": "*",
         "phpunit/phpunit": "^9.3",
         "sempro/phpunit-pretty-print": "^1.4",
         "friendsofphp/php-cs-fixer": "^3.34",
