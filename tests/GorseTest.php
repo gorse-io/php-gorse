@@ -4,6 +4,7 @@ namespace Gorse\Tests;
 
 use Gorse\Feedback;
 use Gorse\Gorse;
+use Gorse\Item;
 use Gorse\User;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -38,6 +39,21 @@ final class GorseTest extends TestCase
         } catch (ClientException $exception) {
             $this->assertEquals(404, $exception->getCode());
         }
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function testItems(): void
+    {
+        $client = new Gorse(self::ENDPOINT, self::API_KEY);
+        $item   = new Item("1", false, ["a", "b", "c"], "2020-02-02T20:20:02.02Z", ["red", "fast", "sky"], "comment");
+        // Insert an item.
+        $rowsAffected = $client->insertItem($item);
+        $this->assertEquals(1, $rowsAffected->rowAffected);
+        // Get this item.
+        $returnItem = $client->getItem("1");
+        $this->assertEquals($item, $returnItem);
     }
 
     /**
