@@ -44,6 +44,30 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
+    public function insertItem(Item $item): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('POST', '/api/item/', $item));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function getItem(string $item_id): Item
+    {
+        return Item::fromJSON($this->request('GET', '/api/item/' . $item_id, null));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function deleteItem(string $item_id): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('DELETE', '/api/item/' . $item_id, null));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     public function insertFeedback(array $feedback): RowAffected
     {
         return RowAffected::fromJSON($this->request('POST', '/api/feedback/', $feedback));

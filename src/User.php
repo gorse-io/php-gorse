@@ -16,6 +16,9 @@ class User implements \JsonSerializable
         ];
     }
 
+    /**
+     * @param object $json
+     */
     public static function fromJSON($json): User
     {
         return new User($json->UserId, $json->Labels);
