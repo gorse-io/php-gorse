@@ -50,6 +50,15 @@ final class Gorse
     }
 
     /**
+     * @param  Item[]          $items
+     * @throws GuzzleException
+     */
+    public function batchInsertItem(array $items): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('POST', '/api/items', $items));
+    }
+
+    /**
      * @throws GuzzleException
      */
     public function getItem(string $item_id): Item

@@ -4,8 +4,13 @@ namespace Gorse;
 
 class User implements \JsonSerializable
 {
-    public function __construct(public string $userId, public array $labels)
+    public string $userId;
+    public array $labels;
+
+    public function __construct(string $userId, array $labels)
     {
+        $this->userId = $userId;
+        $this->labels = $labels;
     }
 
     public function jsonSerialize(): array

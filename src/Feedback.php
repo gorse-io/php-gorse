@@ -4,12 +4,21 @@ namespace Gorse;
 
 class Feedback implements \JsonSerializable
 {
+    public string $feedback_type;
+    public string $user_id;
+    public string $item_id;
+    public string $timestamp;
+
     public function __construct(
-        public string $feedback_type,
-        public string $user_id,
-        public string $item_id,
-        public string $timestamp
+        string $feedback_type,
+        string $user_id,
+        string $item_id,
+        string $timestamp
     ) {
+        $this->feedback_type = $feedback_type;
+        $this->user_id       = $user_id;
+        $this->item_id       = $item_id;
+        $this->timestamp     = $timestamp;
     }
 
     public function jsonSerialize(): array
