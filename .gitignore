@@ -1,1 +1,6 @@
-/vendor/
+.*
+!.gitignore
+!.php-cs-fixer.dist.php
+!.github/
+
+vendor/

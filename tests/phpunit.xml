@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  backupGlobals="false"
+  backupStaticAttributes="false"
+  beStrictAboutTestsThatDoNotTestAnything="false"
+  colors="true"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  processIsolation="false"
+  stopOnError="false"
+  stopOnFailure="false"
+  verbose="true"
+  printerClass="Sempro\PHPUnitPrettyPrinter\PrettyPrinterForPhpUnit9"
+>
+  <testsuites>
+    <testsuite name="main">
+      <directory suffix="Test.php">./tests/</directory>
+    </testsuite>
+  </testsuites>
+  <coverage processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+  </coverage>
+  <php>
+    <!-- <ini name="date.timezone" value="PRC" /> -->
+    <!-- <ini name="intl.default_locale" value="C.UTF-8" /> -->
+    <ini name="memory_limit" value="2048M" />
+  </php>
+</phpunit>
