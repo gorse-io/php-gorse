@@ -1,5 +1,8 @@
 <?php
 
+use Gorse\Feedback;
+use Gorse\Gorse;
+use Gorse\User;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
