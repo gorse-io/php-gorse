@@ -18,7 +18,6 @@
         "phpunit/phpunit": "^9.3"
     },
     "require": {
-        "guzzlehttp/guzzle": "^7.0",
-        "ext-redis": "*"
+        "guzzlehttp/guzzle": "^7.0"
     }
 }

@@ -15,18 +15,40 @@ final class GorseTest extends TestCase
     public function testUsers(): void
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
-        $user = new User("1", array("a", "b", "c"));
-        // Insert a user.
+
+        $user = new User("1000", array("gender" => "M", "occupation" => "engineer"), "zhenghaoz");
         $rowsAffected = $client->insertUser($user);
         $this->assertEquals(1, $rowsAffected->rowAffected);
-        // Get this user.
-        $returnUser = $client->getUser("1");
+        $returnUser = $client->getUser("1000");
         $this->assertEquals($user, $returnUser);
-        // Delete this user.
-        $rowsAffected = $client->deleteUser("1");
+
+        $rowsAffected = $client->deleteUser("1000");
         $this->assertEquals(1, $rowsAffected->rowAffected);
         try {
-            $client->getUser("1");
+            $client->getUser("1000");
+            $this->fail();
+        } catch (ClientException $exception) {
+            $this->assertEquals(404, $exception->getCode());
+        }
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function testItems()
+    {
+        $client = new Gorse(self::ENDPOINT, self::API_KEY);
+
+        $item = new Item("2000", true, array("embedding" => array(0.1, 0.2, 0.3)), array("Comedy", "Animation"), "2022-11-20T13:55:27Z", "Minions (2015)");
+        $rowsAffected = $client->insertItem($item);
+        $this->assertEquals(1, $rowsAffected->rowAffected);
+        $returnItem = $client->getItem("2000");
+        $this->assertEquals($item, $returnItem);
+
+        $rowsAffected = $client->deleteItem("2000");
+        $this->assertEquals(1, $rowsAffected->rowAffected);
+        try {
+            $client->getItem("2000");
             $this->fail();
         } catch (ClientException $exception) {
             $this->assertEquals(404, $exception->getCode());
@@ -39,24 +61,27 @@ final class GorseTest extends TestCase
     public function testFeedback()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
-        $feedback = [
-            new Feedback("read", "10", "3", "2022-11-20T13:55:27Z"),
-            new Feedback("read", "10", "4", "2022-11-20T13:55:27Z"),
-        ];
+
+        $feedback = array(
+            new Feedback("watch", "2000", "1", 1.0, gmdate("Y-m-d\TH:i:s\Z")),
+            new Feedback("watch", "2000", "1060", 2.0, gmdate("Y-m-d\TH:i:s\Z")),
+            new Feedback("watch", "2000", "11", 3.0, gmdate("Y-m-d\TH:i:s\Z")),
+        );
+        foreach ($feedback as $fb) {
+            $client->deleteFeedback($fb->feedback_type, $fb->user_id, $fb->item_id);
+        }
         $rowsAffected = $client->insertFeedback($feedback);
-        $this->assertEquals(2, $rowsAffected->rowAffected);
+        $this->assertEquals(3, $rowsAffected->rowAffected);
     }
 
     /**
-     * @throws RedisException|GuzzleException
+     * @throws GuzzleException
      */
     public function testRecommend()
     {
-        $redis = new Redis();
-        $redis->connect('127.0.0.1');
-        $redis->zAdd('offline_recommend/10', [], 1, '10', 2, '20', 3, '30');
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
-        $items = $client->getRecommend('10');
-        $this->assertEquals(['30', '20', '10'], $items);
+        $client->insertUser(new User("3000", array(), ""));
+        $items = $client->getRecommend('3000', 3);
+        $this->assertEquals(['315', '1432', '918'], $items);
     }
 }

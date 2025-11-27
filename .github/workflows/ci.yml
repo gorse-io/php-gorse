@@ -14,27 +14,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Build the stack
-        run: docker compose up -d
+      - name: Setup test
+        run: curl -sL https://raw.githubusercontent.com/gorse-io/gorse/refs/heads/master/client/setup-test.sh | bash
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          extensions: redis
           tools: composer
       - name: Install dependencies
         run: composer install
       - name: Set up autoloading
         run: composer dump-autoload
-      - name: Check the deployed service health
-        uses: jtalk/url-health-check-action@v2
-        with:
-          # Check the following URLs one by one sequentially
-          url: http://127.0.0.1:8088/metrics
-          # Fail this action after this many failed attempts
-          max-attempts: 5
-          # Delay between retries
-          retry-delay: 5s
-          # Retry all errors, including 404. This option might trigger curl upgrade.
-          retry-all: true
       - name: Run tests
         run: ./vendor/bin/phpunit test

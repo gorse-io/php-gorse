@@ -6,11 +6,13 @@ class User implements JsonSerializable
 {
     public string $userId;
     public array $labels;
+    public string $comment;
 
-    public function __construct(string $userId, array $labels)
+    public function __construct(string $userId, array $labels, string $comment = "")
     {
         $this->userId = $userId;
         $this->labels = $labels;
+        $this->comment = $comment;
     }
 
     public function jsonSerialize(): array
@@ -18,12 +20,13 @@ class User implements JsonSerializable
         return [
             'UserId' => $this->userId,
             'Labels' => $this->labels,
+            'Comment' => $this->comment,
         ];
     }
 
     public static function fromJSON($json): User
     {
-        return new User($json->UserId, $json->Labels);
+        return new User($json->UserId, (array) $json->Labels, $json->Comment);
     }
 }
 
@@ -32,13 +35,15 @@ class Feedback implements JsonSerializable
     public string $feedback_type;
     public string $user_id;
     public string $item_id;
+    public float $value;
     public string $timestamp;
 
-    public function __construct(string $feedback_type, string $user_id, string $item_id, string $timestamp)
+    public function __construct(string $feedback_type, string $user_id, string $item_id, float $value, string $timestamp)
     {
         $this->feedback_type = $feedback_type;
         $this->user_id = $user_id;
         $this->item_id = $item_id;
+        $this->value = $value;
         $this->timestamp = $timestamp;
     }
 
@@ -48,8 +53,46 @@ class Feedback implements JsonSerializable
             'FeedbackType' => $this->feedback_type,
             'UserId' => $this->user_id,
             'ItemId' => $this->item_id,
+            'Value' => $this->value,
             'Timestamp' => $this->timestamp,
         ];
+    }
+}
+
+class Item implements JsonSerializable
+{
+    public string $itemId;
+    public bool $isHidden;
+    public array $labels;
+    public array $categories;
+    public string $timestamp;
+    public string $comment;
+
+    public function __construct(string $itemId, bool $isHidden, array $labels, array $categories, string $timestamp, string $comment)
+    {
+        $this->itemId = $itemId;
+        $this->isHidden = $isHidden;
+        $this->labels = $labels;
+        $this->categories = $categories;
+        $this->timestamp = $timestamp;
+        $this->comment = $comment;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'ItemId' => $this->itemId,
+            'IsHidden' => $this->isHidden,
+            'Labels' => $this->labels,
+            'Categories' => $this->categories,
+            'Timestamp' => $this->timestamp,
+            'Comment' => $this->comment,
+        ];
+    }
+
+    public static function fromJSON($json): Item
+    {
+        return new Item($json->ItemId, $json->IsHidden, (array) $json->Labels, (array) $json->Categories, $json->Timestamp, $json->Comment);
     }
 }
 
@@ -103,6 +146,30 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
+    function insertItem(Item $item): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('POST', '/api/item/', $item));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getItem(string $item_id): Item
+    {
+        return Item::fromJSON($this->request('GET', '/api/item/' . $item_id, null));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function deleteItem(string $item_id): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('DELETE', '/api/item/' . $item_id, null));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     function insertFeedback(array $feedback): RowAffected
     {
         return RowAffected::fromJSON($this->request('POST', '/api/feedback/', $feedback));
@@ -111,9 +178,17 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
-    function getRecommend(string $user_id): array
+    function deleteFeedback(string $feedback_type, string $user_id, string $item_id): RowAffected
     {
-        return $this->request('GET', '/api/recommend/' . $user_id, null);
+        return RowAffected::fromJSON($this->request('DELETE', '/api/feedback/' . $feedback_type . '/' . $user_id . '/' . $item_id, null));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getRecommend(string $user_id, int $n = 10): array
+    {
+        return $this->request('GET', '/api/recommend/' . $user_id . '?n=' . $n, null);
     }
 
     /**
