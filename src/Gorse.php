@@ -1,122 +1,28 @@
 <?php
 
+namespace Gorse;
+
+use Gorse\Model\Feedback;
+use Gorse\Model\Item;
+use Gorse\Model\RowAffected;
+use Gorse\Model\Score;
+use Gorse\Model\User;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-
-class User implements JsonSerializable
-{
-    public string $userId;
-    public array $labels;
-    public string $comment;
-
-    public function __construct(string $userId, array $labels, string $comment = "")
-    {
-        $this->userId = $userId;
-        $this->labels = $labels;
-        $this->comment = $comment;
-    }
-
-    public function jsonSerialize(): array
-    {
-        return [
-            'UserId' => $this->userId,
-            'Labels' => $this->labels,
-            'Comment' => $this->comment,
-        ];
-    }
-
-    public static function fromJSON($json): User
-    {
-        return new User($json->UserId, (array) $json->Labels, $json->Comment);
-    }
-}
-
-class Feedback implements JsonSerializable
-{
-    public string $feedback_type;
-    public string $user_id;
-    public string $item_id;
-    public float $value;
-    public string $timestamp;
-
-    public function __construct(string $feedback_type, string $user_id, string $item_id, float $value, string $timestamp)
-    {
-        $this->feedback_type = $feedback_type;
-        $this->user_id = $user_id;
-        $this->item_id = $item_id;
-        $this->value = $value;
-        $this->timestamp = $timestamp;
-    }
-
-    public function jsonSerialize(): array
-    {
-        return [
-            'FeedbackType' => $this->feedback_type,
-            'UserId' => $this->user_id,
-            'ItemId' => $this->item_id,
-            'Value' => $this->value,
-            'Timestamp' => $this->timestamp,
-        ];
-    }
-}
-
-class Item implements JsonSerializable
-{
-    public string $itemId;
-    public bool $isHidden;
-    public array $labels;
-    public array $categories;
-    public string $timestamp;
-    public string $comment;
-
-    public function __construct(string $itemId, bool $isHidden, array $labels, array $categories, string $timestamp, string $comment)
-    {
-        $this->itemId = $itemId;
-        $this->isHidden = $isHidden;
-        $this->labels = $labels;
-        $this->categories = $categories;
-        $this->timestamp = $timestamp;
-        $this->comment = $comment;
-    }
-
-    public function jsonSerialize(): array
-    {
-        return [
-            'ItemId' => $this->itemId,
-            'IsHidden' => $this->isHidden,
-            'Labels' => $this->labels,
-            'Categories' => $this->categories,
-            'Timestamp' => $this->timestamp,
-            'Comment' => $this->comment,
-        ];
-    }
-
-    public static function fromJSON($json): Item
-    {
-        return new Item($json->ItemId, $json->IsHidden, (array) $json->Labels, (array) $json->Categories, $json->Timestamp, $json->Comment);
-    }
-}
-
-class RowAffected
-{
-    public int $rowAffected;
-
-    public static function fromJSON($json): RowAffected
-    {
-        $rowAffected = new RowAffected();
-        $rowAffected->rowAffected = $json->RowAffected;
-        return $rowAffected;
-    }
-}
+use GuzzleHttp\RequestOptions;
+use stdClass;
 
 final class Gorse
 {
     private string $endpoint;
     private string $apiKey;
+    private Client $client;
 
     function __construct(string $endpoint, string $apiKey)
     {
         $this->endpoint = $endpoint;
         $this->apiKey = $apiKey;
+        $this->client = new Client(['base_uri' => $this->endpoint]);
     }
 
     /**
@@ -170,9 +76,41 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
+    function updateItem(string $item_id, Item $item): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('PATCH', '/api/item/' . $item_id, $item));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     function insertFeedback(array $feedback): RowAffected
     {
         return RowAffected::fromJSON($this->request('POST', '/api/feedback/', $feedback));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function listFeedback(string $feedback_type, string $user_id, string $item_id): array
+    {
+        return $this->request('GET', '/api/feedback/' . $feedback_type . '/' . $user_id . '/' . $item_id, null);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getFeedback(string $user_id, string $item_id): array
+    {
+        return $this->request('GET', '/api/feedback/' . $user_id . '/' . $item_id, null);
+    }
+    
+    /**
+     * @throws GuzzleException
+     */
+    function getFeedbackByType(string $feedback_type): array
+    {
+        return $this->request('GET', '/api/feedback/' . $feedback_type, null);
     }
 
     /**
@@ -186,22 +124,107 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
-    function getRecommend(string $user_id, int $n = 10): array
+    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
     {
-        return $this->request('GET', '/api/recommend/' . $user_id . '?n=' . $n, null);
+        $params = ['n' => $n, 'offset' => $offset];
+        if ($write_back_type) $params['write-back-type'] = $write_back_type;
+        if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
+        
+        return $this->request('GET', '/api/recommend/' . $user_id, null, $params);
+    }
+    
+    /**
+     * @throws GuzzleException
+     */
+    function getSessionRecommend(array $feedback, int $n = 10): array
+    {
+        $scores = [];
+        $response = $this->request('POST', '/api/session/recommend?n=' . $n, $feedback);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
+        }
+        return $scores;
     }
 
     /**
      * @throws GuzzleException
      */
-    private function request(string $method, string $uri, $body)
+    function getNeighbors(string $item_id, int $n = 10, int $offset = 0): array
     {
-        $client = new GuzzleHttp\Client(['base_uri' => $this->endpoint]);
-        $options = [GuzzleHttp\RequestOptions::HEADERS => ['X-API-Key' => $this->apiKey]];
-        if ($body != null) {
-            $options[GuzzleHttp\RequestOptions::JSON] = $body;
+         return $this->getItemNeighbors('neighbors', $item_id, $n, $offset);
+    }
+    
+    /**
+     * @throws GuzzleException
+     */
+    function getItemNeighbors(string $name, string $item_id, int $n = 10, int $offset = 0): array
+    {
+        $scores = [];
+        $response = $this->request('GET', "/api/item-to-item/$name/$item_id", null, ['n' => $n, 'offset' => $offset]);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
         }
-        $response = $client->request($method, $uri, $options);
+        return $scores;
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getUserNeighbors(string $name, string $user_id, int $n = 10, int $offset = 0): array
+    {
+        $scores = [];
+        $response = $this->request('GET', "/api/user-to-user/$name/$user_id", null, ['n' => $n, 'offset' => $offset]);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
+        }
+        return $scores;
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getNonPersonalized(string $name, ?string $user_id = null,  int $n = 10, int $offset = 0): array
+    {
+        $params = ['n' => $n, 'offset' => $offset];
+        if ($user_id) $params['user-id'] = $user_id;
+
+        $scores = [];
+        $response = $this->request('GET', "/api/non-personalized/$name", null, $params);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
+        }
+        return $scores;
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function getLatest(?string $user_id = null, int $n = 10, int $offset = 0): array
+    {
+        $params = ['n' => $n, 'offset' => $offset];
+        if ($user_id) $params['user-id'] = $user_id;
+
+        $scores = [];
+        $response = $this->request('GET', '/api/latest', null, $params);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
+        }
+        return $scores;
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function request(string $method, string $uri, $body, array $query = [])
+    {
+        $options = [RequestOptions::HEADERS => ['X-API-Key' => $this->apiKey]];
+        if ($body != null) {
+            $options[RequestOptions::JSON] = $body;
+        }
+        if (!empty($query)) {
+            $options[RequestOptions::QUERY] = $query;
+        }
+        $response = $this->client->request($method, $uri, $options);
         return json_decode($response->getBody());
     }
 }
