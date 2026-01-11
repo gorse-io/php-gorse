@@ -124,9 +124,10 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
-    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
+    function getRecommend(string $user_id, ?string $category = null, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
     {
         $params = ['n' => $n, 'offset' => $offset];
+        if ($category) $params['category'] = $category;
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
         if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
         
@@ -183,9 +184,10 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
-    function getNonPersonalized(string $name, ?string $user_id = null,  int $n = 10, int $offset = 0): array
+    function getNonPersonalized(string $name, ?string $category = null, ?string $user_id = null,  int $n = 10, int $offset = 0): array
     {
         $params = ['n' => $n, 'offset' => $offset];
+        if ($category) $params['category'] = $category;
         if ($user_id) $params['user-id'] = $user_id;
 
         $scores = [];
@@ -199,9 +201,10 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
-    function getLatest(?string $user_id = null, int $n = 10, int $offset = 0): array
+    function getLatest(?string $category = null, ?string $user_id = null, int $n = 10, int $offset = 0): array
     {
         $params = ['n' => $n, 'offset' => $offset];
+        if ($category) $params['category'] = $category;
         if ($user_id) $params['user-id'] = $user_id;
 
         $scores = [];
