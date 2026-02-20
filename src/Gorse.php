@@ -38,7 +38,7 @@ final class Gorse
      */
     function getUser(string $user_id): User
     {
-        return User::fromJSON($this->request('GET', '/api/user/' . $user_id, null));
+        return User::fromJSON($this->request('GET', '/api/user/' . urlencode($user_id), null));
     }
 
     /**
@@ -46,7 +46,7 @@ final class Gorse
      */
     function deleteUser(string $user_id): RowAffected
     {
-        return RowAffected::fromJSON($this->request('DELETE', '/api/user/' . $user_id, null));
+        return RowAffected::fromJSON($this->request('DELETE', '/api/user/' . urlencode($user_id), null));
     }
 
     /**
@@ -62,7 +62,7 @@ final class Gorse
      */
     function getItem(string $item_id): Item
     {
-        return Item::fromJSON($this->request('GET', '/api/item/' . $item_id, null));
+        return Item::fromJSON($this->request('GET', '/api/item/' . urlencode($item_id), null));
     }
 
     /**
@@ -70,7 +70,7 @@ final class Gorse
      */
     function deleteItem(string $item_id): RowAffected
     {
-        return RowAffected::fromJSON($this->request('DELETE', '/api/item/' . $item_id, null));
+        return RowAffected::fromJSON($this->request('DELETE', '/api/item/' . urlencode($item_id), null));
     }
 
     /**
@@ -78,7 +78,7 @@ final class Gorse
      */
     function updateItem(string $item_id, Item $item): RowAffected
     {
-        return RowAffected::fromJSON($this->request('PATCH', '/api/item/' . $item_id, $item));
+        return RowAffected::fromJSON($this->request('PATCH', '/api/item/' . urlencode($item_id), $item));
     }
 
     /**
@@ -94,7 +94,7 @@ final class Gorse
      */
     function listFeedback(string $feedback_type, string $user_id, string $item_id): array
     {
-        return $this->request('GET', '/api/feedback/' . $feedback_type . '/' . $user_id . '/' . $item_id, null);
+        return $this->request('GET', '/api/feedback/' . urlencode($feedback_type) . '/' . urlencode($user_id) . '/' . urlencode($item_id), null);
     }
 
     /**
@@ -102,7 +102,7 @@ final class Gorse
      */
     function getFeedback(string $user_id, string $item_id): array
     {
-        return $this->request('GET', '/api/feedback/' . $user_id . '/' . $item_id, null);
+        return $this->request('GET', '/api/feedback/' . urlencode($user_id) . '/' . urlencode($item_id), null);
     }
     
     /**
@@ -110,7 +110,7 @@ final class Gorse
      */
     function getFeedbackByType(string $feedback_type): array
     {
-        return $this->request('GET', '/api/feedback/' . $feedback_type, null);
+        return $this->request('GET', '/api/feedback/' . urlencode($feedback_type), null);
     }
 
     /**
@@ -118,7 +118,7 @@ final class Gorse
      */
     function deleteFeedback(string $feedback_type, string $user_id, string $item_id): RowAffected
     {
-        return RowAffected::fromJSON($this->request('DELETE', '/api/feedback/' . $feedback_type . '/' . $user_id . '/' . $item_id, null));
+        return RowAffected::fromJSON($this->request('DELETE', '/api/feedback/' . urlencode($feedback_type) . '/' . urlencode($user_id) . '/' . urlencode($item_id), null));
     }
 
     /**
@@ -130,7 +130,7 @@ final class Gorse
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
         if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
         
-        return $this->request('GET', '/api/recommend/' . $user_id, null, $params);
+        return $this->request('GET', '/api/recommend/' . urlencode($user_id), null, $params);
     }
     
     /**
@@ -160,7 +160,7 @@ final class Gorse
     function getItemNeighbors(string $name, string $item_id, int $n = 10, int $offset = 0): array
     {
         $scores = [];
-        $response = $this->request('GET', "/api/item-to-item/$name/$item_id", null, ['n' => $n, 'offset' => $offset]);
+        $response = $this->request('GET', "/api/item-to-item/" . urlencode($name) . "/" . urlencode($item_id), null, ['n' => $n, 'offset' => $offset]);
         foreach ($response as $score) {
             $scores[] = Score::fromJSON($score);
         }
@@ -173,7 +173,7 @@ final class Gorse
     function getUserNeighbors(string $name, string $user_id, int $n = 10, int $offset = 0): array
     {
         $scores = [];
-        $response = $this->request('GET', "/api/user-to-user/$name/$user_id", null, ['n' => $n, 'offset' => $offset]);
+        $response = $this->request('GET', "/api/user-to-user/" . urlencode($name) . "/" . urlencode($user_id), null, ['n' => $n, 'offset' => $offset]);
         foreach ($response as $score) {
             $scores[] = Score::fromJSON($score);
         }
@@ -189,7 +189,7 @@ final class Gorse
         if ($user_id) $params['user-id'] = $user_id;
 
         $scores = [];
-        $response = $this->request('GET', "/api/non-personalized/$name", null, $params);
+        $response = $this->request('GET', "/api/non-personalized/" . urlencode($name), null, $params);
         foreach ($response as $score) {
             $scores[] = Score::fromJSON($score);
         }
