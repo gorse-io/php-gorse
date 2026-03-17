@@ -39,6 +39,30 @@ final class GorseTest extends TestCase
     /**
      * @throws GuzzleException
      */
+    public function testInsertMultipleUsers(): void
+    {
+        $client = new Gorse(self::ENDPOINT, self::API_KEY);
+
+        $users = array(
+            new User("1001", array("M", "engineer"), "user1"),
+            new User("1002", array("F", "designer"), "user2"),
+            new User("1003", array("M", "developer"), "user3"),
+        );
+
+        // Insert multiple users
+        $rowsAffected = $client->insertUsers($users);
+        $this->assertEquals(3, $rowsAffected->rowAffected);
+
+        // Verify users were inserted
+        foreach ($users as $user) {
+            $returnUser = $client->getUser($user->userId);
+            $this->assertEquals($user, $returnUser);
+        }
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     public function testItems()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
@@ -56,6 +80,30 @@ final class GorseTest extends TestCase
             $this->fail();
         } catch (ClientException $exception) {
             $this->assertEquals(404, $exception->getCode());
+        }
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function testInsertMultipleItems(): void
+    {
+        $client = new Gorse(self::ENDPOINT, self::API_KEY);
+
+        $items = array(
+            new Item("2001", false, array("Comedy", "Animation"), "2022-11-20T13:55:27Z", array("comedy", "movie"), "Minions (2015)"),
+            new Item("2002", false, array("Action", "Adventure"), "2022-11-21T13:55:27Z", array("action", "movie"), "The Matrix (1999)"),
+            new Item("2003", false, array("Drama", "Thriller"), "2022-11-22T13:55:27Z", array("drama", "movie"), "The Silence of the Lambs (1991)"),
+        );
+
+        // Insert multiple items
+        $rowsAffected = $client->insertItems($items);
+        $this->assertEquals(3, $rowsAffected->rowAffected);
+
+        // Verify items were inserted
+        foreach ($items as $item) {
+            $returnItem = $client->getItem($item->itemId);
+            $this->assertEquals($item, $returnItem);
         }
     }
 

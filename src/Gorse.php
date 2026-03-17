@@ -36,6 +36,14 @@ final class Gorse
     /**
      * @throws GuzzleException
      */
+    function insertUsers(array $users): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('POST', '/api/users', $users));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     function getUser(string $user_id): User
     {
         return User::fromJSON($this->request('GET', '/api/user/' . urlencode($user_id), null));
@@ -55,6 +63,14 @@ final class Gorse
     function insertItem(Item $item): RowAffected
     {
         return RowAffected::fromJSON($this->request('POST', '/api/item/', $item));
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    function insertItems(array $items): RowAffected
+    {
+        return RowAffected::fromJSON($this->request('POST', '/api/items', $items));
     }
 
     /**
