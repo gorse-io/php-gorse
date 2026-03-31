@@ -4,6 +4,7 @@ use Gorse\Gorse;
 use Gorse\Model\Feedback;
 use Gorse\Model\Item;
 use Gorse\Model\User;
+use Gorse\Model\Score;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
@@ -86,20 +87,26 @@ final class GorseTest extends TestCase
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
         $client->insertUser(new User("3000", array(), ""));
         $items = $client->getRecommend('3000', null, null, 3);
-        $this->assertIsArray($items);
+        
+        // Check IDs
+        $this->assertCount(3, $items);
+        $this->assertEquals('315', $items[0]->id);
+        $this->assertEquals('1432', $items[1]->id);
+        $this->assertEquals('918', $items[2]->id);
     }
 
     /**
      * @throws GuzzleException
      */
-    public function testNonPersonalized()
+    public function testLatest()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
-        // Test getLatest which returns Score[]
         $items = $client->getLatest('3000', 3);
-        $this->assertIsArray($items);
-        foreach ($items as $item) {
-             $this->assertInstanceOf(\Gorse\Model\Score::class, $item);
-        }
+        
+        // Check IDs
+        $this->assertCount(3, $items);
+        $this->assertEquals('315', $items[0]->id);
+        $this->assertEquals('1432', $items[1]->id);
+        $this->assertEquals('918', $items[2]->id);
     }
 }

@@ -122,6 +122,8 @@ final class Gorse
     }
 
     /**
+     * Get recommendation with scores for a user.
+     * Uses X-API-Version: 2 header to return scores.
      * @throws GuzzleException
      */
     function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
@@ -130,7 +132,12 @@ final class Gorse
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
         if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
         
-        return $this->request('GET', '/api/recommend/' . urlencode($user_id), null, $params);
+        $scores = [];
+        $response = $this->requestWithHeaders('GET', '/api/recommend/' . urlencode($user_id), null, $params, ['X-API-Version' => '2']);
+        foreach ($response as $score) {
+            $scores[] = Score::fromJSON($score);
+        }
+        return $scores;
     }
     
     /**
@@ -217,7 +224,15 @@ final class Gorse
      */
     private function request(string $method, string $uri, $body, array $query = [])
     {
-        $options = [RequestOptions::HEADERS => ['X-API-Key' => $this->apiKey]];
+        return $this->requestWithHeaders($method, $uri, $body, $query, []);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function requestWithHeaders(string $method, string $uri, $body, array $query = [], array $headers = [])
+    {
+        $options = [RequestOptions::HEADERS => array_merge(['X-API-Key' => $this->apiKey], $headers)];
         if ($body != null) {
             $options[RequestOptions::JSON] = $body;
         }
