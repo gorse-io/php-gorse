@@ -122,24 +122,11 @@ final class Gorse
     }
 
     /**
-     * Get recommendation for a user.
-     * @throws GuzzleException
-     */
-    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
-    {
-        $params = ['n' => $n, 'offset' => $offset];
-        if ($write_back_type) $params['write-back-type'] = $write_back_type;
-        if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
-        
-        return $this->request('GET', '/api/recommend/' . urlencode($user_id), null, $params);
-    }
-
-    /**
      * Get recommendation with scores for a user.
      * Uses X-API-Version: 2 header to return scores.
      * @throws GuzzleException
      */
-    function get_recommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
+    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
     {
         $params = ['n' => $n, 'offset' => $offset];
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
