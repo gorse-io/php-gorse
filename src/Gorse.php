@@ -139,7 +139,7 @@ final class Gorse
      * Uses X-API-Version: 2 header to return scores.
      * @throws GuzzleException
      */
-    function getRecommendWithScores(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
+    function get_recommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
     {
         $params = ['n' => $n, 'offset' => $offset];
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
