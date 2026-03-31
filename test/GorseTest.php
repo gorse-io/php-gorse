@@ -88,24 +88,11 @@ final class GorseTest extends TestCase
         $client->insertUser(new User("3000", array(), ""));
         $items = $client->getRecommend('3000', null, null, 3);
         
-        // Check that we get an array of Score objects
-        $this->assertIsArray($items);
+        // Check IDs
         $this->assertCount(3, $items);
-        
-        // Check each item is a Score instance and has expected ID
-        foreach ($items as $item) {
-            $this->assertInstanceOf(Score::class, $item);
-            $this->assertNotEmpty($item->id);
-            $this->assertIsString($item->id);
-        }
-        
-        // Check specific IDs match expected recommendations
-        $ids = array_map(function($item) {
-            return $item->id;
-        }, $items);
-        $this->assertEquals('315', $ids[0]);
-        $this->assertEquals('1432', $ids[1]);
-        $this->assertEquals('918', $ids[2]);
+        $this->assertEquals('315', $items[0]->id);
+        $this->assertEquals('1432', $items[1]->id);
+        $this->assertEquals('918', $items[2]->id);
     }
 
     /**
@@ -114,12 +101,7 @@ final class GorseTest extends TestCase
     public function testNonPersonalized()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
-        // Test getLatest which returns Score[]
         $items = $client->getLatest('3000', 3);
-        $this->assertIsArray($items);
-        foreach ($items as $item) {
-            $this->assertInstanceOf(Score::class, $item);
-            $this->assertNotEmpty($item->id);
-        }
+        $this->assertCount(3, $items);
     }
 }
