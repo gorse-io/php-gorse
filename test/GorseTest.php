@@ -98,10 +98,15 @@ final class GorseTest extends TestCase
     /**
      * @throws GuzzleException
      */
-    public function testNonPersonalized()
+    public function testLatest()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
         $items = $client->getLatest('3000', 3);
+        
+        // Check IDs
         $this->assertCount(3, $items);
+        $this->assertEquals('315', $items[0]->id);
+        $this->assertEquals('1432', $items[1]->id);
+        $this->assertEquals('918', $items[2]->id);
     }
 }
