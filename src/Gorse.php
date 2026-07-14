@@ -66,6 +66,20 @@ final class Gorse
     }
 
     /**
+     * @return Item[]
+     * @throws GuzzleException
+     */
+    function searchItems(string $query, int $n = 10): array
+    {
+        $items = [];
+        $response = $this->request('GET', '/api/items', null, ['q' => $query, 'n' => $n]);
+        foreach ($response->Items as $item) {
+            $items[] = Item::fromJSON($item);
+        }
+        return $items;
+    }
+
+    /**
      * @throws GuzzleException
      */
     function deleteItem(string $item_id): RowAffected
