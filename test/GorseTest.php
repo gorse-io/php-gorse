@@ -44,6 +44,10 @@ final class GorseTest extends TestCase
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);
 
+        $items = $client->searchItems("Toy Story", 3);
+        $this->assertNotEmpty($items);
+        $this->assertEquals("Toy Story (1995)", $items[0]->comment);
+
         $item = new Item("2000", true, array("Comedy", "Animation"), "2022-11-20T13:55:27Z", array("comedy", "movie"), "Minions (2015)");
         $rowsAffected = $client->insertItem($item);
         $this->assertEquals(1, $rowsAffected->rowAffected);
