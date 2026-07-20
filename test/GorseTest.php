@@ -102,6 +102,22 @@ final class GorseTest extends TestCase
     /**
      * @throws GuzzleException
      */
+    public function testRecommendMultipleCategories()
+    {
+        $client = new Gorse(self::ENDPOINT, self::API_KEY);
+        $client->insertUser(new User("3000", array(), ""));
+        $items = $client->getRecommend('3000', null, null, 3, 0, ['Drama', 'Comedy']);
+
+        $this->assertCount(3, $items);
+        foreach ($items as $score) {
+            $item = $client->getItem($score->id);
+            $this->assertNotEmpty(array_intersect(['Drama', 'Comedy'], $item->categories));
+        }
+    }
+
+    /**
+     * @throws GuzzleException
+     */
     public function testLatest()
     {
         $client = new Gorse(self::ENDPOINT, self::API_KEY);

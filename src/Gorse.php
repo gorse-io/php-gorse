@@ -9,6 +9,7 @@ use Gorse\Model\Score;
 use Gorse\Model\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Psr7\Query;
 use GuzzleHttp\RequestOptions;
 use stdClass;
 
@@ -140,14 +141,15 @@ final class Gorse
      * Uses X-API-Version: 2 header to return scores.
      * @throws GuzzleException
      */
-    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0): array
+    function getRecommend(string $user_id, ?string $write_back_type = null, ?string $write_back_delay = null, int $n = 10, int $offset = 0, array $categories = []): array
     {
         $params = ['n' => $n, 'offset' => $offset];
         if ($write_back_type) $params['write-back-type'] = $write_back_type;
         if ($write_back_delay) $params['write-back-delay'] = $write_back_delay;
+        if ($categories) $params['category'] = $categories;
         
         $scores = [];
-        $response = $this->requestWithHeaders('GET', '/api/recommend/' . urlencode($user_id), null, $params, ['X-API-Version' => '2']);
+        $response = $this->requestWithHeaders('GET', '/api/recommend/' . urlencode($user_id) . '?' . Query::build($params), null, [], ['X-API-Version' => '2']);
         foreach ($response as $score) {
             $scores[] = Score::fromJSON($score);
         }
