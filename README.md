@@ -29,18 +29,53 @@ $user = new User("100", ["gender" => "M", "age" => "25"], "my_comment");
 $rowsAffected = $client->insertUser($user);
 ```
 
+Insert multiple users at once:
+
+```php
+$users = [
+    new User("100", ["gender" => "M", "age" => "25"], "user1"),
+    new User("101", ["gender" => "F", "age" => "30"], "user2"),
+    new User("102", ["gender" => "M", "age" => "28"], "user3"),
+];
+$rowsAffected = $client->insertUsers($users);
+```
+
 Insert items:
 
 ```php
 $item = new Item(
     "2000", 
     true, 
-    ["embedding" => [0.1, 0.2, 0.3]], 
     ["Comedy", "Animation"], 
     "2022-11-20T13:55:27Z", 
+    ["embedding" => [0.1, 0.2, 0.3]], 
     "Minions (2015)"
 );
 $rowsAffected = $client->insertItem($item);
+```
+
+Insert multiple items at once:
+
+```php
+$items = [
+    new Item(
+        "2000",
+        false,
+        ["Comedy", "Animation"],
+        "2022-11-20T13:55:27Z",
+        ["comedy", "movie"],
+        "Minions (2015)"
+    ),
+    new Item(
+        "2001",
+        false,
+        ["Action", "Adventure"],
+        "2022-11-21T13:55:27Z",
+        ["action", "movie"],
+        "The Matrix (1999)"
+    ),
+];
+$rowsAffected = $client->insertItems($items);
 ```
 
 Insert feedback:
